@@ -20986,6 +20986,12 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GOLD_SPENT_FOR_TRAVELLING, firstcost);
         GetSession()->SendActivateTaxiReply(ERR_TAXIOK);
         GetSession()->SendDoFlight(mount_display_id, sourcepath);
+		if (npc)
+		{
+			float Speed = 10.0f;
+			this->SetSpeed(MOVE_RUN, Speed, true);
+		}
+		
     }
     return true;
 }
