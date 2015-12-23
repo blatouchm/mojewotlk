@@ -1,0 +1,18 @@
+vytvorit git pres bat:
+
+git init
+git add *
+git commit -m "pridani"
+
+
+pak dat v github programu add
+
+a mely by se objevit vsechny soubory
+
+
+
+
+pak otevrit shell a tam napsat 
+git remote add origin blabla
+git push -u origin master
+
