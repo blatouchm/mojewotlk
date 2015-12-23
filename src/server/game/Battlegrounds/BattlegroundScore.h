@@ -47,7 +47,12 @@ enum ScoreType
 
     // SOTA
     SCORE_DESTROYED_DEMOLISHER  = 16,
-    SCORE_DESTROYED_WALL        = 17
+    SCORE_DESTROYED_WALL        = 17,
+
+    /** World of Warcraft Armory **/
+	SCORE_DAMAGE_TAKEN = 18,
+	SCORE_HEALING_TAKEN = 19
+    /** World of Warcraft Armory **/
 };
 
 struct BattlegroundScore
@@ -57,7 +62,7 @@ struct BattlegroundScore
 
     protected:
         BattlegroundScore(ObjectGuid playerGuid) : PlayerGuid(playerGuid), KillingBlows(0), Deaths(0),
-            HonorableKills(0), BonusHonor(0), DamageDone(0), HealingDone(0) { }
+			HonorableKills(0), BonusHonor(0), DamageDone(0), HealingDone(0), DamageTaken(0), HealingTaken(0) {}
 
         virtual ~BattlegroundScore() { }
 
@@ -83,6 +88,14 @@ struct BattlegroundScore
                 case SCORE_HEALING_DONE:    // Healing Done
                     HealingDone += value;
                     break;
+				/** World of Warcraft Armory **/
+				case SCORE_DAMAGE_TAKEN:
+					DamageTaken += value;              // Damage Taken
+					break;
+				case SCORE_HEALING_TAKEN:
+					HealingTaken += value;             // Healing Taken
+					break;
+				 /** World of Warcraft Armory **/
                 default:
                     ASSERT(false && "Not implemented Battleground score type!");
                     break;
@@ -130,6 +143,8 @@ struct BattlegroundScore
         uint32 BonusHonor;
         uint32 DamageDone;
         uint32 HealingDone;
+		uint32 DamageTaken;
+		uint32 HealingTaken;
 };
 
 #endif // TRINITY_BATTLEGROUND_SCORE_H
