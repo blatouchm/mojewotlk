@@ -1925,7 +1925,7 @@ class spell_gen_mount : public SpellScriptLoader
                     target->RemoveAurasByType(SPELL_AURA_MOUNTED, ObjectGuid::Empty, GetHitAura());
 
                     // Triggered spell id dependent on riding skill and zone
-                    bool canFly = false;
+                    bool canFly = true; //opravit !!!
                     uint32 map = GetVirtualMapForMapAndZone(target->GetMapId(), target->GetZoneId());
 					if (map == 530 || map == 0 || map == 1 || (map == 571 && target->HasSpell(SPELL_COLD_WEATHER_FLYING)))
                         canFly = true;
@@ -1934,8 +1934,8 @@ class spell_gen_mount : public SpellScriptLoader
                     target->GetPosition(x, y, z);
                     uint32 areaFlag = target->GetBaseMap()->GetAreaFlag(x, y, z);
                     AreaTableEntry const* area = sAreaStore.LookupEntry(areaFlag);
-                    if (!area || (canFly && (area->flags & AREA_FLAG_NO_FLY_ZONE)))
-                        canFly = false;
+                 //   if (!area || (canFly && (area->flags & AREA_FLAG_NO_FLY_ZONE)))
+                   //     canFly = false;
 
                     uint32 mount = 0;
                     switch (target->GetBaseSkillValue(SKILL_RIDING))
