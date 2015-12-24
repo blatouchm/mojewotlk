@@ -347,7 +347,7 @@ void FlightPathMovementGenerator::DoReset(Player* player)
     init.SetFirstPointId(GetCurrentNode());
     init.SetFly();
 	if (player->getLevel()>39)
-		init.SetVelocity(60.0f);
+		init.SetVelocity(50.0f);
 	else
 		init.SetVelocity(PLAYER_FLIGHT_SPEED);
     init.Launch();
