@@ -2829,7 +2829,10 @@ void Player::GiveLevel(uint8 level)
 		ModifyMoney(int32(500));
 
 	if (level == 12)
-		ModifyMoney(int32(1000));
+		ModifyMoney(int32(3000));
+
+	if (level == 16)
+		ModifyMoney(int32(10000));
 }
 
 void Player::InitTalentForLevel()
