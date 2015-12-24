@@ -2823,12 +2823,12 @@ void Player::GiveLevel(uint8 level)
 
 	//da mu nejaky prachy na spelly
 	if (level == 3)
-		ModifyMoney(500);
+		ModifyMoney(300);
 
-	if (level == 5)
+	if (level == 7)
 		ModifyMoney(1000);
 
-	if (level == 10)
+	if (level == 12)
 		ModifyMoney(10000);
 }
 
