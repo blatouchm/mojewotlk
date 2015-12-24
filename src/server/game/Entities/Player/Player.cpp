@@ -2825,11 +2825,11 @@ void Player::GiveLevel(uint8 level)
 	if (level == 3)
 		ModifyMoney(int32(300));
 
-	if (level == 7)
-		ModifyMoney(int32(1000));
+	if (level == 8)
+		ModifyMoney(int32(500));
 
 	if (level == 12)
-		ModifyMoney(int32(10000));
+		ModifyMoney(int32(1000));
 }
 
 void Player::InitTalentForLevel()
@@ -22095,8 +22095,6 @@ void Player::InitPrimaryProfessions()
 
 bool Player::ModifyMoney(int32 amount, bool sendError /*= true*/)
 {
-	printf("menim money %i", amount);
-
     if (!amount)
         return true;
 
