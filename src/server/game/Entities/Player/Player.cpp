@@ -2819,6 +2819,17 @@ void Player::GiveLevel(uint8 level)
             }
 
     sScriptMgr->OnPlayerLevelChanged(this, oldLevel);
+
+
+	//da mu nejaky prachy na spelly
+	if (level == 3)
+		ModifyMoney(500);
+
+	if (level == 5)
+		ModifyMoney(1000);
+
+	if (level == 10)
+		ModifyMoney(10000);
 }
 
 void Player::InitTalentForLevel()
