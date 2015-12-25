@@ -2823,16 +2823,28 @@ void Player::GiveLevel(uint8 level)
 
 	//da mu nejaky prachy na spelly
 	if (level == 3)
-		ModifyMoney(int32(300));
+		ModifyMoney(int32(300));  //3 silver
 
 	if (level == 8)
-		ModifyMoney(int32(500));
+		ModifyMoney(int32(500));  //5 silver
 
 	if (level == 12)
-		ModifyMoney(int32(3000));
+		ModifyMoney(int32(3000));  //30 silver
 
 	if (level == 16)
-		ModifyMoney(int32(10000));
+		ModifyMoney(int32(10000));  //1 gold
+
+	if (level == 20)
+		ModifyMoney(int32(50000));  //5 goldu
+
+	if (level == 25)
+		ModifyMoney(int32(100000));  //10 goldu
+
+	if (level == 30)
+		ModifyMoney(int32(500000));  //50 goldu
+
+	if (level == 40)
+		ModifyMoney(int32(1000000));  //100 goldu
 }
 
 void Player::InitTalentForLevel()
