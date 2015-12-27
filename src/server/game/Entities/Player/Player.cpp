@@ -2219,8 +2219,11 @@ void Player::Regenerate(Powers power)
             bool recentCast = IsUnderLastManaUseEffect();
             float ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA);
 
-            if (getLevel() < 15)
-                ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA) * (2.066f - (getLevel() * 0.066f));
+           // if (getLevel() < 15)
+             //   ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA) * (2.066f - (getLevel() * 0.066f));
+
+			if (getLevel() < 80)
+				ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA) * (2.0f);
 
             if (recentCast) // Trinity Updates Mana in intervals of 2s, which is correct
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER) *  ManaIncreaseRate * 0.001f * m_regenTimer;
@@ -2326,8 +2329,11 @@ void Player::RegenerateHealth()
 
     float HealthIncreaseRate = sWorld->getRate(RATE_HEALTH);
 
-    if (getLevel() < 15)
-        HealthIncreaseRate = sWorld->getRate(RATE_HEALTH) * (2.066f - (getLevel() * 0.066f));
+  //  if (getLevel() < 15)
+   //     HealthIncreaseRate = sWorld->getRate(RATE_HEALTH) * (2.066f - (getLevel() * 0.066f));
+
+	if (getLevel() < 80)
+		HealthIncreaseRate = sWorld->getRate(RATE_HEALTH) * (2.0f);
 
     float addValue = 0.0f;
 
@@ -2842,9 +2848,9 @@ void Player::GiveLevel(uint8 level)
 
 	if (level == 30)
 		ModifyMoney(int32(500000));  //50 goldu
-
+	
 	if (level == 40)
-		ModifyMoney(int32(1000000));  //100 goldu
+		ModifyMoney(int32(1000000));  //100 goldu						  
 }
 
 void Player::InitTalentForLevel()
