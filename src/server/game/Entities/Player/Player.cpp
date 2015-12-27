@@ -21003,12 +21003,11 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
     //RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
 
 	//da vybrat jestli pujde instantne nebo ne
-	//od levelu 60 instantni litak
+	//od levelu 60 instantni litak  -  pak nejdou nektery questy, blbost, ovlivnuje to vsechno litani
 	//od 40 rychlejsi litak
 	
 
- //   if (sWorld->getBoolConfig(CONFIG_INSTANT_TAXI))
-	if (getLevel()>59)
+    if (sWorld->getBoolConfig(CONFIG_INSTANT_TAXI))
     {
         TaxiNodesEntry const* lastPathNode = sTaxiNodesStore.LookupEntry(nodes[nodes.size()-1]);
         ASSERT(lastPathNode);
