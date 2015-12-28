@@ -80,6 +80,7 @@ void AddSC_wp_commandscript();
 
 //custom
 void AddSC_cs_world_chat();
+void AddSC_npc_1v1arena();
 
 #ifdef SCRIPTS
 //world
@@ -1422,6 +1423,6 @@ void AddCustomScripts()
 #ifdef SCRIPTS
     /* This is where custom scripts should be added. */
 	AddSC_cs_world_chat();
-
+	AddSC_npc_1v1arena();
 #endif
 }
