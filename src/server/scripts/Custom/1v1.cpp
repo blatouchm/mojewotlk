@@ -158,7 +158,7 @@ public:
 	}
 
 
-	bool OnGossipHello(Player* player)
+	bool OnGossipHello(Player* player, Creature* me)
 	{
 		GameObject* goplayer = player->ToGameObject();
 
@@ -270,7 +270,7 @@ public:
 
 		}
 
-		OnGossipHello(player);
+		OnGossipHello(player, me);
 		return true;
 	}
 };
