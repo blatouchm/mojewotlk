@@ -16,6 +16,8 @@
 #include "Player.h"
 #include "Chat.h"
 #include "ScriptedGossip.h"
+#include "ScriptedCreature.h"
+
 
 #define ARENA_1V1_MIN_LEVEL 80 // min level to create an arenateam
 #define ARENA_1V1_COST 40 * 10000 // costs for create a team: 40 gold
@@ -28,7 +30,7 @@ public:
 	}
 
 
-	bool JoinQueueArena(Player* player)
+	bool JoinQueueArena(Player* player, Creature* me)
 	{
 		if (ARENA_1V1_MIN_LEVEL > player->getLevel())
 			return false;
@@ -109,7 +111,7 @@ public:
 	}
 
 
-	bool CreateArenateam(Player* player)
+	bool CreateArenateam(Player* player, Creature* me)
 	{
 		uint8 slot = ArenaTeam::GetSlotByType(ARENA_TEAM_1v1);
 		if (slot >= MAX_ARENA_SLOT)
@@ -160,9 +162,6 @@ public:
 
 	bool OnGossipHello(Player* player, Creature* me)
 	{
-		GameObject* goplayer = player->ToGameObject();
-
-
 		if (player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)) == NULL)
 			player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Create 1v1 Rated Arena Team", GOSSIP_SENDER_MAIN, 1, "Create 1v1 arena team?", ARENA_1V1_COST, false);
 		else
@@ -179,15 +178,14 @@ public:
 		}
 
 		player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "|TInterface/ICONS/INV_Misc_Coin_03:30|t How to Use NPC?", GOSSIP_SENDER_MAIN, 8);
-		player->SEND_GOSSIP_MENU(68, goplayer->GetGUID());
+		player->SEND_GOSSIP_MENU(68, me->GetGUID());
 		return true;
 	}
 
 
-											//WorldObject* source
+											
 	bool OnGossipSelect(Player* player, Creature* me, uint32 /*uiSender*/, uint32 uiAction)
 	{
-		GameObject* goplayer = player->ToGameObject();
 		player->PlayerTalkClass->ClearMenus();
 
 		switch (uiAction)
@@ -196,7 +194,7 @@ public:
 		{
 			if (ARENA_1V1_MIN_LEVEL <= player->getLevel())
 			{
-				if (player->GetMoney() >= ARENA_1V1_COST && CreateArenateam(player))
+				if (player->GetMoney() >= ARENA_1V1_COST && CreateArenateam(player, me))
 					player->ModifyMoney(-(int32)ARENA_1V1_COST);
 			}
 			else
@@ -210,7 +208,7 @@ public:
 
 		case 2: // Join Queue Arena
 		{
-			if (JoinQueueArena(player) == false)
+			if (JoinQueueArena(player, me) == false)
 				ChatHandler(player->GetSession()).SendSysMessage("Something went wrong while join queue.");
 			player->CLOSE_GOSSIP_MENU();
 			return true;
@@ -263,7 +261,7 @@ public:
 			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Join 1v1 Arena and ready!", GOSSIP_SENDER_MAIN, uiAction);
 			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Enjoy!", GOSSIP_SENDER_MAIN, uiAction);
 			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<- Back", GOSSIP_SENDER_MAIN, 7);
-			player->SEND_GOSSIP_MENU(68, goplayer->GetGUID());
+			player->SEND_GOSSIP_MENU(68, me->GetGUID());
 			return true;
 		}
 		break;
