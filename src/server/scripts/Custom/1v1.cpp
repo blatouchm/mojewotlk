@@ -28,12 +28,12 @@ public:
 	}
 
 
-	bool JoinQueueArena(Player* player, Creature* me)
+	bool JoinQueueArena(Player* player)
 	{
 		if (ARENA_1V1_MIN_LEVEL > player->getLevel())
 			return false;
 
-		uint64 guid = player->GetGUID();
+		//uint64 guid = player->GetGUID();
 		uint8 arenaslot = ArenaTeam::GetSlotByType(ARENA_TEAM_1v1);
 		uint8 arenatype = ARENA_TYPE_1v1;
 		uint32 arenaRating = 0;
@@ -64,7 +64,7 @@ public:
 		if (!bracketEntry)
 			return false;
 
-		GroupJoinBattlegroundResult err = ERR_GROUP_JOIN_BATTLEGROUND_FAIL;
+		//GroupJoinBattlegroundResult err = ERR_GROUP_JOIN_BATTLEGROUND_FAIL;
 
 		// check if already in queue
 		if (player->GetBattlegroundQueueIndex(bgQueueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES)
@@ -109,7 +109,7 @@ public:
 	}
 
 
-	bool CreateArenateam(Player* player, Creature* me)
+	bool CreateArenateam(Player* player)
 	{
 		uint8 slot = ArenaTeam::GetSlotByType(ARENA_TEAM_1v1);
 		if (slot >= MAX_ARENA_SLOT)
@@ -158,7 +158,7 @@ public:
 	}
 
 
-	bool OnGossipHello(Player* player, Creature* me)
+	bool OnGossipHello(Player* player)
 	{
 		GameObject* goplayer = player->ToGameObject();
 
@@ -196,7 +196,7 @@ public:
 		{
 			if (ARENA_1V1_MIN_LEVEL <= player->getLevel())
 			{
-				if (player->GetMoney() >= ARENA_1V1_COST && CreateArenateam(player, me))
+				if (player->GetMoney() >= ARENA_1V1_COST && CreateArenateam(player))
 					player->ModifyMoney(-(int32)ARENA_1V1_COST);
 			}
 			else
@@ -210,7 +210,7 @@ public:
 
 		case 2: // Join Queue Arena
 		{
-			if (JoinQueueArena(player, me) == false)
+			if (JoinQueueArena(player) == false)
 				ChatHandler(player->GetSession()).SendSysMessage("Something went wrong while join queue.");
 			player->CLOSE_GOSSIP_MENU();
 			return true;
@@ -270,7 +270,7 @@ public:
 
 		}
 
-		OnGossipHello(player, me);
+		OnGossipHello(player);
 		return true;
 	}
 };
