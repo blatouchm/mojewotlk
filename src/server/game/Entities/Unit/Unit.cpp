@@ -10335,9 +10335,31 @@ float Unit::SpellDamagePctDone(Unit* victim, SpellInfo const* spellProto, Damage
             break;
         case SPELLFAMILY_DEATHKNIGHT:
             // Improved Icy Touch
-            if (spellProto->SpellFamilyFlags[0] & 0x2)
-                if (AuraEffect* aurEff = GetDummyAuraEffect(SPELLFAMILY_DEATHKNIGHT, 2721, 0))
-                    AddPct(DoneTotalMod, aurEff->GetAmount());
+			if (spellProto->SpellFamilyFlags[0] & 0x2)
+			{
+				if (AuraEffect* aurEff = GetDummyAuraEffect(SPELLFAMILY_DEATHKNIGHT, 2721, 0))
+					AddPct(DoneTotalMod, aurEff->GetAmount());
+
+				Unit* pPet = NULL;
+				for (Unit::ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr) //Find Rune Weapon
+					if ((*itr)->GetEntry() == 27893)
+					{
+						pPet = (*itr);
+						break;
+					}
+				if (pPet && GetVictim())
+				{
+					pPet->CastSpell(GetVictim(), 55095, true);
+					Aura *aur = GetVictim()->GetAura(55095, pPet->GetGUID());
+
+					if (AuraEffect const* epidemic = GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, 234, EFFECT_0))
+					{
+
+						aur->SetMaxDuration(epidemic->GetAmount() + aur->GetMaxDuration());
+						aur->SetDuration(aur->GetMaxDuration());
+					}
+				}
+			}
 
             // Glacier Rot
             if (spellProto->SpellFamilyFlags[0] & 0x2 || spellProto->SpellFamilyFlags[1] & 0x6)
