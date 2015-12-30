@@ -717,7 +717,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, ObjectGuid npcGUI
     _session->SendPacket(&data);
     TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_OFFER_REWARD NPC=%s, questid=%u", npcGUID.ToString().c_str(), quest->GetQuestId());
 
-	TC_LOG_INFO("server.worldserver", "REWARD QUEST %ui.", quest->XPValue(_session->GetPlayer()) * sWorld->getRate(RATE_XP_QUEST));
+	TC_LOG_INFO("server.worldserver", "REWARD QUEST %f.", quest->XPValue(_session->GetPlayer()) * sWorld->getRate(RATE_XP_QUEST));
 	
 }
 
