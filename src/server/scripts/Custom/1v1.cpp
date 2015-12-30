@@ -36,8 +36,8 @@ public:
 			return false;
 
 		//uint64 guid = player->GetGUID();
-		uint8 arenaslot = ArenaTeam::GetSlotByType(ARENA_TEAM_1v1);
-		uint8 arenatype = ARENA_TYPE_1v1;
+		uint8 arenaslot = ArenaTeam::GetSlotByType(ARENA_TEAM_2v2);
+		uint8 arenatype = ARENA_TEAM_2v2;
 		uint32 arenaRating = 0;
 		uint32 matchmakerRating = 0;
 		bool isRated = true;
@@ -113,7 +113,7 @@ public:
 
 	bool CreateArenateam(Player* player, Creature* me)
 	{
-		uint8 slot = ArenaTeam::GetSlotByType(ARENA_TEAM_1v1);
+		uint8 slot = ArenaTeam::GetSlotByType(ARENA_TEAM_2v2);
 		if (slot >= MAX_ARENA_SLOT)
 			return false;
 
@@ -144,7 +144,7 @@ public:
 		// Create arena team
 		ArenaTeam* arenaTeam = new ArenaTeam();
 
-		if (!arenaTeam->Create(player->GetGUID(), ARENA_TEAM_1v1, teamName.str(), 0, 0, 0, 0, 0))
+		if (!arenaTeam->Create(player->GetGUID(), ARENA_TEAM_2v2, teamName.str(), 0, 0, 0, 0, 0))
 		{
 			delete arenaTeam;
 			return false;
@@ -162,11 +162,11 @@ public:
 
 	bool OnGossipHello(Player* player, Creature* me)
 	{
-		if (player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)) == NULL)
+		if (player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_2v2)) == NULL)
 			player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Create 1v1 Rated Arena Team", GOSSIP_SENDER_MAIN, 1, "Create 1v1 arena team?", ARENA_1V1_COST, false);
 		else
 		{
-			if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_1v1))
+			if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_2v2))
 				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Leave 1v1 Arena", GOSSIP_SENDER_MAIN, 3);
 			else
 			{
@@ -227,7 +227,7 @@ public:
 
 		case 4: // get statistics
 		{
-			ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_1v1)));
+			ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_2v2)));
 			if (at)
 			{
 				std::stringstream s;
@@ -247,7 +247,7 @@ public:
 		case 5: // Disband arenateam
 		{
 			WorldPacket Data;
-			Data << (uint32)player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_1v1));
+			Data << (uint32)player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_2v2));
 			player->GetSession()->HandleArenaTeamLeaveOpcode(Data);
 			ChatHandler(player->GetSession()).PSendSysMessage("Arena team deleted!");
 			player->CLOSE_GOSSIP_MENU();
