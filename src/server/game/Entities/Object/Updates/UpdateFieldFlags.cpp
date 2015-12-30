@@ -17,8 +17,6 @@
 
 #include "UpdateFieldFlags.h"
 
-//pridany radky kvuli arenam
-
 uint32 ItemUpdateFieldFlags[CONTAINER_END] =
 {
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_GUID
