@@ -1887,6 +1887,10 @@ void World::SetInitialWorldSettings()
 
     if (uint32 realmId = sConfigMgr->GetIntDefault("RealmID", 0)) // 0 reserved for auth
         sLog->SetRealmId(realmId);
+
+
+
+	TC_LOG_INFO("server.loading", "CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD %i.", sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD));
 }
 
 void World::DetectDBCLang()

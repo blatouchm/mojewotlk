@@ -475,14 +475,14 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket& recvData)
         return;
 
     // not let enemies sign guild charter
-    if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && GetPlayer()->GetTeam() != sObjectMgr->GetPlayerTeamByGUID(ownerGuid))
+    /*if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && GetPlayer()->GetTeam() != sObjectMgr->GetPlayerTeamByGUID(ownerGuid))
     {
         if (type != GUILD_CHARTER_TYPE)
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_INVITE_SS, "", "", ERR_ARENA_TEAM_NOT_ALLIED);
         else
             Guild::SendCommandResult(this, GUILD_COMMAND_CREATE, ERR_GUILD_NOT_ALLIED);
         return;
-    }
+    }*/
 
     if (type != GUILD_CHARTER_TYPE)
     {
@@ -638,7 +638,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket& recvData)
 
     TC_LOG_DEBUG("network", "OFFER PETITION: type %u, %s, to %s", type, petitionguid.ToString().c_str(), plguid.ToString().c_str());
 
-    if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && GetPlayer()->GetTeam() != player->GetTeam())
+   /* if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && GetPlayer()->GetTeam() != player->GetTeam())
     {
         if (type != GUILD_CHARTER_TYPE)
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_INVITE_SS, "", "", ERR_ARENA_TEAM_NOT_ALLIED);
@@ -646,7 +646,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket& recvData)
             Guild::SendCommandResult(this, GUILD_COMMAND_CREATE, ERR_GUILD_NOT_ALLIED);
         return;
     }
-
+	*/
     if (type != GUILD_CHARTER_TYPE)
     {
         if (player->getLevel() < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
