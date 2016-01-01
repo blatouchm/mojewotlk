@@ -4987,6 +4987,7 @@ void Unit::RemoveAllGameObjects()
 
 void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage* log)
 {
+	//printf("Unit SendSpellNonMeleeDamageLog WorldPacket log1 \n");
     WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, (16+4+4+4+1+4+4+1+1+4+4+1)); // we guess size
     data << log->target->GetPackGUID();
     data << log->attacker->GetPackGUID();
@@ -5003,6 +5004,7 @@ void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage* log)
     data << uint32(log->HitInfo);
     data << uint8 (0);                                      // flag to use extend data
     SendMessageToSet(&data, true);
+	//printf("Unit SendSpellNonMeleeDamageLog WorldPacket log6 \n");
 }
 
 void Unit::SendSpellNonMeleeDamageLog(Unit* target, uint32 SpellID, uint32 Damage, SpellSchoolMask damageSchoolMask, uint32 AbsorbedDamage, uint32 Resist, bool PhysicalDamage, uint32 Blocked, bool CriticalHit)
@@ -7191,6 +7193,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
             // Dancing Rune Weapon
             if (dummySpell->Id == 49028)
             {
+				//printf("Dancing Rune Weapon 1\n");
+
                 // 1 dummy aura for dismiss rune blade
                 if (effIndex != 1)
                     return false;
@@ -7200,34 +7204,48 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     if ((*itr)->GetEntry() == 27893)
                     {
                         pPet = *itr;
+						triggered_spell_id = 50707; //bez tohohle se to neukaze v recountu
                         break;
                     }
 
-				// special abilities damage
-                if (pPet && pPet->GetVictim() && damage && procSpell)
-                {
-					pPet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-					pPet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    uint32 procDmg = damage / 2;
-                    pPet->SendSpellNonMeleeDamageLog(pPet->GetVictim(), procSpell->Id, procDmg, procSpell->GetSchoolMask(), 0, 0, false, 0, false);
-                    pPet->DealDamage(pPet->GetVictim(), procDmg, NULL, SPELL_DIRECT_DAMAGE, procSpell->GetSchoolMask(), procSpell, true);
-                    break;
-                }
-				else // copy 50% melee damage
-					if (pPet && pPet->GetVictim() && damage && !procSpell)
+
+				if (!pPet || !damage || !GetVictim() || !GetVictim()->IsAlive())
+				{
+					//printf("Dancing Rune Weapon neni pet\n");
+					return false;
+				}
+
+			/*	pPet->SetInCombatWith(victim);
+	*/
+	
+
+
+					// special abilities damage
+					if (procSpell)  //vola se kdyz pouzije spell, efekt spellu se nastavuje pak v spelleffects
 					{
+						//printf("Dancing Rune Weapon procSpell %i\n", procSpell->Id);
+						uint32 procDmg = damage / 2;
+						pPet->SendSpellNonMeleeDamageLog(victim, procSpell->Id, procDmg, procSpell->GetSchoolMask(), 0, 0, false, 0, false);
+						pPet->DealDamage(GetVictim(), procDmg, NULL, SPELL_DIRECT_DAMAGE, procSpell ? procSpell->GetSchoolMask() : SPELL_SCHOOL_MASK_NORMAL, procSpell ? procSpell : NULL, true);
+						/*if (procSpell->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && (procSpell->SpellFamilyFlags[EFFECT_0] & 0x1))        // DRW cast disease if spell is Plague Strike or Icy Touch
+							pPet->CastSpell(GetVictim(), 55078, true);
+						else if (procSpell->SpellFamilyName == SPELLFAMILY_DEATHKNIGHT && (procSpell->SpellFamilyFlags[EFFECT_0] & 0x2))
+							pPet->CastSpell(GetVictim(), 55095, true);*/
+					}
+					else  // copy 50% melee damage
+				    {
+						//printf("Dancing Rune Weapon melee damage\n");
 						CalcDamageInfo damageInfo;
-						CalculateMeleeDamage(pPet->GetVictim(), 0, &damageInfo, BASE_ATTACK);
+						CalculateMeleeDamage(GetVictim(), 0, &damageInfo, BASE_ATTACK);
 						damageInfo.attacker = pPet;
 						damageInfo.damage = damageInfo.damage / 2;
 						// Send log damage message to client
-						pPet->DealDamageMods(pPet->GetVictim(), damageInfo.damage, &damageInfo.absorb);
+						pPet->DealDamageMods(GetVictim(), damageInfo.damage, &damageInfo.absorb);
 						pPet->SendAttackStateUpdate(&damageInfo);
 						pPet->ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
 						pPet->DealMeleeDamage(&damageInfo, true);
 					}
-					else
-						return false;
+					break;
             }
             // Mark of Blood
             if (dummySpell->Id == 49005)
@@ -10347,7 +10365,7 @@ float Unit::SpellDamagePctDone(Unit* victim, SpellInfo const* spellProto, Damage
 						pPet = (*itr);
 						break;
 					}
-				if (pPet && GetVictim())
+				if (pPet && GetVictim() && GetVictim()->IsAlive())
 				{
 					pPet->CastSpell(GetVictim(), 55095, true);
 					Aura *aur = GetVictim()->GetAura(55095, pPet->GetGUID());
@@ -11454,6 +11472,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         {
             case SPELLFAMILY_DEATHKNIGHT:
                 // Glacier Rot
+				printf("Glacier Rot spellProto\n");
                 if (spellProto->SpellFamilyFlags[0] & 0x2 || spellProto->SpellFamilyFlags[1] & 0x6)
                     if (AuraEffect* aurEff = GetDummyAuraEffect(SPELLFAMILY_DEATHKNIGHT, 196, 0))
                         if (victim->GetDiseasesByCaster(owner->GetGUID()) > 0)

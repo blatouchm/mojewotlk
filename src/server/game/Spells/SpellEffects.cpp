@@ -3294,7 +3294,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 if (AuraEffect const* aurEff = m_caster->GetAuraEffect(58657, EFFECT_0))
                     AddPct(totalDamagePercentMod, aurEff->GetAmount());
 				// double disease when dancing runic weapon active
-				if (pPet && m_caster->GetVictim())
+				if (pPet && m_caster->GetVictim() && m_caster->GetVictim()->IsAlive())
 				{
 					pPet->CastSpell(m_caster->GetVictim(), m_spellInfo->Effects[2].TriggerSpell, true);
 					Aura *aur = m_caster->GetVictim()->GetAura(m_spellInfo->Effects[2].TriggerSpell, pPet->GetGUID());
@@ -3348,10 +3348,17 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 // Death Knight T8 Melee 4P Bonus
                 if (AuraEffect const* aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
                     AddPct(bonusPct, aurEff->GetAmount());
+
 				if (pPet)
+				{
+					//printf("Obliterate pPet - spelleffect\n");
 					AddPct(totalDamagePercentMod, (m_spellInfo->Effects[EFFECT_2].CalcValue() * (unitTarget->GetDiseasesByCaster(m_caster->GetGUID(), consumeDiseases) + unitTarget->GetDiseasesByCaster(pPet->GetGUID(), consumeDiseases)) / 2.0f));
+				}
 				else
+				{
+					//printf("Obliterate - spelleffect\n");
 					AddPct(totalDamagePercentMod, bonusPct);
+				}
                 break;
             }
             // Blood-Caked Strike - Blood-Caked Blade
