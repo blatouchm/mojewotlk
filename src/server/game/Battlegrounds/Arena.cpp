@@ -23,6 +23,7 @@
 #include "Player.h"
 #include "World.h"
 #include "WorldSession.h"
+#include "Chat.h"
 
 Arena::Arena()
 {
@@ -223,14 +224,26 @@ void Arena::EndBattleground(uint32 winner)
                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA, GetMapId());
 
                     // Last standing - Rated 5v5 arena & be solely alive player
-                    if (GetArenaType() == ARENA_TYPE_5v5 && aliveWinners == 1 && player->IsAlive())
-                        player->CastSpell(player, SPELL_LAST_MAN_STANDING, true);
+                  //  if (GetArenaType() == ARENA_TYPE_5v5 && aliveWinners == 1 && player->IsAlive())
+                    //    player->CastSpell(player, SPELL_LAST_MAN_STANDING, true);
 
                     winnerArenaTeam->MemberWon(player, loserMatchmakerRating, winnerMatchmakerChange);
+
+					if (GetArenaType() == ARENA_TYPE_5v5)
+					{
+						player->ModifyHonorPoints(1000);
+						ChatHandler(player->GetSession()).PSendSysMessage("Ziskal jsi %i honoru.", 1000);
+					}
                 }
                 else
                 {
                     loserArenaTeam->MemberLost(player, winnerMatchmakerRating, loserMatchmakerChange);
+
+					if (GetArenaType() == ARENA_TYPE_5v5)
+					{
+						player->ModifyHonorPoints(200);
+						ChatHandler(player->GetSession()).PSendSysMessage("Ziskal jsi %i honoru.", 200);
+					}
 
                     // Arena lost => reset the win_rated_arena having the "no_lose" condition
                     player->ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE);

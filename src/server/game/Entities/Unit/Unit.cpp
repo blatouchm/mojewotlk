@@ -11472,7 +11472,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         {
             case SPELLFAMILY_DEATHKNIGHT:
                 // Glacier Rot
-				printf("Glacier Rot spellProto\n");
+				//printf("Glacier Rot spellProto\n");
                 if (spellProto->SpellFamilyFlags[0] & 0x2 || spellProto->SpellFamilyFlags[1] & 0x6)
                     if (AuraEffect* aurEff = GetDummyAuraEffect(SPELLFAMILY_DEATHKNIGHT, 196, 0))
                         if (victim->GetDiseasesByCaster(owner->GetGUID()) > 0)

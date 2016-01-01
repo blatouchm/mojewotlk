@@ -14,6 +14,7 @@ set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
   Custom/world_chat.cpp
   Custom/1v1.cpp
+  Custom/npc_arena1v1.h
 #  ${sources_Custom}
 )
 

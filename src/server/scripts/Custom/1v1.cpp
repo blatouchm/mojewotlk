@@ -1,9 +1,9 @@
-//    _      ______ _      _____  ___                
-//   | | /| / / __ \ | /| / / _ )/ _ ) ___  _______ _
-//   | |/ |/ / /_/ / |/ |/ / _  / _  |/ _ \/ __/ _ `/
-//   |__/|__/\____/|__/|__/____/____(_)___/_/  \_, /
-//                                            /___/  
-//   Script updated and shared by Madness from WoWBB.org
+/*
+ *
+ * Copyright (C) 2013 Emu-Devstore <http://emu-devstore.com/>
+ * Written by Teiby <http://www.teiby.de/>
+ *
+ */
 
 #include "ScriptMgr.h"
 #include "ArenaTeamMgr.h"
@@ -13,268 +13,290 @@
 #include "Battleground.h"
 #include "ArenaTeam.h"
 #include "Language.h"
+#include "npc_arena1v1.h"
 #include "Player.h"
 #include "Chat.h"
 #include "ScriptedGossip.h"
 #include "ScriptedCreature.h"
 
 
-#define ARENA_1V1_MIN_LEVEL 80 // min level to create an arenateam
-#define ARENA_1V1_COST 40 * 10000 // costs for create a team: 40 gold
 
 class npc_1v1arena : public CreatureScript
 {
 public:
-	npc_1v1arena() : CreatureScript("npc_1v1arena")
-	{
-	}
+    npc_1v1arena() : CreatureScript("npc_1v1arena") 
+    {
+    }
 
 
-	bool JoinQueueArena(Player* player, Creature* me)
-	{
-		if (ARENA_1V1_MIN_LEVEL > player->getLevel())
-			return false;
+    bool JoinQueueArena(Player* player, Creature* me, bool isRated)
+    {
+        if(!player || !me)
+            return false;
 
-		//uint64 guid = player->GetGUID();
-		uint8 arenaslot = ArenaTeam::GetSlotByType(ARENA_TEAM_2v2);
-		uint8 arenatype = ARENA_TEAM_2v2;
-		uint32 arenaRating = 0;
-		uint32 matchmakerRating = 0;
-		bool isRated = true;
+        if(sWorld->getIntConfig(CONFIG_ARENA_1V1_MIN_LEVEL) > player->getLevel())
+            return false;
 
-		// ignore if we already in BG or BG queue
-		if (player->InBattleground())
-			return false;
+        uint64 guid = player->GetGUID();
+        uint8 arenaslot = ArenaTeam::GetSlotByType(ARENA_TEAM_5v5);
+        uint8 arenatype = ARENA_TYPE_5v5;
+        uint32 arenaRating = 0;
+        uint32 matchmakerRating = 0;
 
-		//check existance
-		Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_AA);
-		if (!bg)
-		{
-			//TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "Battleground: template bg (all arenas) not found");
-			return false;
-		}
+        // ignore if we already in BG or BG queue
+        if (player->InBattleground())
+            return false;
 
-		if (DisableMgr::IsDisabledFor(DISABLE_TYPE_BATTLEGROUND, BATTLEGROUND_AA, NULL))
-		{
-			ChatHandler(player->GetSession()).PSendSysMessage(LANG_ARENA_DISABLED);
-			return false;
-		}
+        //check existance
+        Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_AA);
+        if (!bg)
+        {
+            TC_LOG_ERROR("misc", "Battleground: template bg (all arenas) not found");
+            return false;
+        }
 
-		BattlegroundTypeId bgTypeId = bg->GetTypeID();
-		BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, arenatype);
-		PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bg->GetMapId(), player->getLevel());
-		if (!bracketEntry)
-			return false;
+        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_BATTLEGROUND, BATTLEGROUND_AA, NULL))
+        {
+            ChatHandler(player->GetSession()).PSendSysMessage(LANG_ARENA_DISABLED);
+            return false;
+        }
 
-		//GroupJoinBattlegroundResult err = ERR_GROUP_JOIN_BATTLEGROUND_FAIL;
+        BattlegroundTypeId bgTypeId = bg->GetTypeID();
+        BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, arenatype);
+        PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketByLevel(bg->GetMapId(), player->getLevel());
+        if (!bracketEntry)
+            return false;
 
-		// check if already in queue
-		if (player->GetBattlegroundQueueIndex(bgQueueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES)
-			//player is already in this queue
-			return false;
-		// check if has free queue slots
-		if (!player->HasFreeBattlegroundQueueId())
-			return false;
+        GroupJoinBattlegroundResult err = ERR_GROUP_JOIN_BATTLEGROUND_FAIL;
 
-		uint32 ateamId = 0;
+        // check if already in queue
+        if (player->GetBattlegroundQueueIndex(bgQueueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES)
+            //player is already in this queue
+            return false;
+        // check if has free queue slots
+        if (!player->HasFreeBattlegroundQueueId())
+            return false;
 
-		ateamId = player->GetArenaTeamId(arenaslot);
-		ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(ateamId);
-		if (!at)
-		{
-			player->GetSession()->SendNotInArenaTeamPacket(arenatype);
-			return false;
-		}
-		// get the team rating for queueing
-		arenaRating = at->GetRating();
-		matchmakerRating = arenaRating;
-		// the arenateam id must match for everyone in the group
+        uint32 ateamId = 0;
 
-		if (arenaRating <= 0)
-			arenaRating = 1;
+        if(isRated)
+        {
+            ateamId = player->GetArenaTeamId(arenaslot);
+            ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(ateamId);
+            if (!at)
+            {
+                player->GetSession()->SendNotInArenaTeamPacket(arenatype);
+                return false;
+            }
 
-		BattlegroundQueue &bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
-		bg->SetRated(isRated);
+            // get the team rating for queueing
+            arenaRating = at->GetRating();
+            matchmakerRating = arenaRating;
+            // the arenateam id must match for everyone in the group
 
-		GroupQueueInfo* ginfo = bgQueue.AddGroup(player, NULL, bgTypeId, bracketEntry, arenatype, isRated, false, arenaRating, matchmakerRating, ateamId);
-		uint32 avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
-		uint32 queueSlot = player->AddBattlegroundQueueId(bgQueueTypeId);
+            if (arenaRating <= 0)
+                arenaRating = 1;
+        }
 
-		WorldPacket data;
-		// send status packet (in queue)
-		sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, queueSlot, STATUS_WAIT_QUEUE, avgTime, 0, arenatype, 0);
-		player->GetSession()->SendPacket(&data);
+        BattlegroundQueue &bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
+        bg->SetRated(isRated);
 
-		sBattlegroundMgr->ScheduleQueueUpdate(matchmakerRating, arenatype, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId());
+        GroupQueueInfo* ginfo = bgQueue.AddGroup(player, NULL, bgTypeId, bracketEntry, arenatype, isRated, false, arenaRating, matchmakerRating, ateamId);
+        uint32 avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
+        uint32 queueSlot = player->AddBattlegroundQueueId(bgQueueTypeId);
 
-		return true;
-	}
+        WorldPacket data;
+        // send status packet (in queue)
+        sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, queueSlot, STATUS_WAIT_QUEUE, avgTime, 0, arenatype, 0);
+        player->GetSession()->SendPacket(&data);
 
+        sBattlegroundMgr->ScheduleQueueUpdate(matchmakerRating, arenatype, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId());
 
-	bool CreateArenateam(Player* player, Creature* me)
-	{
-		uint8 slot = ArenaTeam::GetSlotByType(ARENA_TEAM_2v2);
-		if (slot >= MAX_ARENA_SLOT)
-			return false;
-
-		// Check if player is already in an arena team
-		if (player->GetArenaTeamId(slot))
-		{
-			player->GetSession()->SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, player->GetName(), "", ERR_ALREADY_IN_ARENA_TEAM);
-			return false;
-		}
+        return true;
+    }
 
 
-		// Teamname = playername
-		// if teamname exist, we have to choose another name (playername  number)
-		int i = 1;
-		std::stringstream teamName;
-		teamName << player->GetName();
-		do
-		{
-			if (sArenaTeamMgr->GetArenaTeamByName(teamName.str()) != NULL) // teamname exist, so choose another name
-			{
-				teamName.str(std::string());
-				teamName << player->GetName() << i;
-			}
-			else
-				break;
-		} while (i < 100); // should never happen
+    bool CreateArenateam(Player* player, Creature* me)
+    {
+        if(!player || !me)
+            return false;
 
-		// Create arena team
-		ArenaTeam* arenaTeam = new ArenaTeam();
+        uint8 slot = ArenaTeam::GetSlotByType(ARENA_TEAM_5v5);
+        if (slot >= MAX_ARENA_SLOT)
+            return false;
 
-		if (!arenaTeam->Create(player->GetGUID(), ARENA_TEAM_2v2, teamName.str(), 0, 0, 0, 0, 0))
-		{
-			delete arenaTeam;
-			return false;
-		}
-
-		// Register arena team
-		sArenaTeamMgr->AddArenaTeam(arenaTeam);
-		arenaTeam->AddMember(player->GetGUID());
-
-		ChatHandler(player->GetSession()).SendSysMessage("1v1 Arenateam successful created!");
-
-		return true;
-	}
+        // Check if player is already in an arena team
+        if (player->GetArenaTeamId(slot))
+        {
+            player->GetSession()->SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, player->GetName(), "", ERR_ALREADY_IN_ARENA_TEAM);
+            return false;
+        }
 
 
-	bool OnGossipHello(Player* player, Creature* me)
-	{
-		if (player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_2v2)) == NULL)
-			player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Create 1v1 Rated Arena Team", GOSSIP_SENDER_MAIN, 1, "Create 1v1 arena team?", ARENA_1V1_COST, false);
-		else
-		{
-			if (player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_2v2))
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Leave 1v1 Arena", GOSSIP_SENDER_MAIN, 3);
-			else
-			{
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_3v3_5:30|t Join 1v1 Rated Arena", GOSSIP_SENDER_MAIN, 2);
-				player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, "|TInterface/ICONS/Achievement_Arena_2v2_7:30|t Disband Arena team", GOSSIP_SENDER_MAIN, 5, "Are you sure?", 0, false);
-			}
+        // Teamname = playername
+        // if teamname exist, we have to choose another name (playername + number)
+        int i = 1;
+        std::stringstream teamName;
+        teamName << player->GetName();
+        do
+        {
+            if(sArenaTeamMgr->GetArenaTeamByName(teamName.str()) != NULL) // teamname exist, so choose another name
+            {
+                teamName.str(std::string());
+                teamName << player->GetName() << (i++);
+            }
+            else
+                break;
+        } while (i < 100); // should never happen
 
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "|TInterface/ICONS/INV_Misc_Coin_01:30|t Show statistics", GOSSIP_SENDER_MAIN, 4);
-		}
+        // Create arena team
+        ArenaTeam* arenaTeam = new ArenaTeam();
 
-		player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "|TInterface/ICONS/INV_Misc_Coin_03:30|t How to Use NPC?", GOSSIP_SENDER_MAIN, 8);
-		player->SEND_GOSSIP_MENU(68, me->GetGUID());
-		return true;
-	}
+        if (!arenaTeam->Create(player->GetGUID(), ARENA_TEAM_5v5, teamName.str(), 4283124816, 45, 4294242303, 5, 4294705149))
+        {
+            delete arenaTeam;
+            return false;
+        }
 
+        // Register arena team
+        sArenaTeamMgr->AddArenaTeam(arenaTeam);
+        arenaTeam->AddMember(player->GetGUID());
 
-											
-	bool OnGossipSelect(Player* player, Creature* me, uint32 /*uiSender*/, uint32 uiAction)
-	{
-		player->PlayerTalkClass->ClearMenus();
+        ChatHandler(player->GetSession()).SendSysMessage("1v1 Arenateam uspesne vytvoren!");
 
-		switch (uiAction)
-		{
-		case 1: // Create new Arenateam
-		{
-			if (ARENA_1V1_MIN_LEVEL <= player->getLevel())
-			{
-				if (player->GetMoney() >= ARENA_1V1_COST && CreateArenateam(player, me))
-					player->ModifyMoney(-(int32)ARENA_1V1_COST);
-			}
-			else
-			{
-				ChatHandler(player->GetSession()).PSendSysMessage("You need level %u+ to create an 1v1 Arena Team.", ARENA_1V1_MIN_LEVEL);
-				player->CLOSE_GOSSIP_MENU();
-				return true;
-			}
-		}
-		break;
-
-		case 2: // Join Queue Arena
-		{
-			if (JoinQueueArena(player, me) == false)
-				ChatHandler(player->GetSession()).SendSysMessage("Something went wrong while join queue.");
-			player->CLOSE_GOSSIP_MENU();
-			return true;
-		}
-		break;
-
-		case 3: // Leave Queue
-		{
-			WorldPacket Data;
-			Data << (uint8)0x1 << (uint8)0x0 << (uint32)BATTLEGROUND_AA << (uint16)0x0 << (uint8)0x0;
-			player->GetSession()->HandleBattleFieldPortOpcode(Data);
-			player->CLOSE_GOSSIP_MENU();
-			return true;
-		}
-		break;
-
-		case 4: // get statistics
-		{
-			ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_2v2)));
-			if (at)
-			{
-				std::stringstream s;
-				s << "Rating: " << at->GetStats().Rating;
-				s << "\nRank: " << at->GetStats().Rank;
-				s << "\nSeason Games: " << at->GetStats().SeasonGames;
-				s << "\nSeason Wins: " << at->GetStats().SeasonWins;
-				s << "\nWeek Games: " << at->GetStats().WeekGames;
-				s << "\nWeek Wins: " << at->GetStats().WeekWins;
-
-				ChatHandler(player->GetSession()).PSendSysMessage(s.str().c_str());
-			}
-		}
-		break;
+        return true;
+    }
 
 
-		case 5: // Disband arenateam
-		{
-			WorldPacket Data;
-			Data << (uint32)player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_2v2));
-			player->GetSession()->HandleArenaTeamLeaveOpcode(Data);
-			ChatHandler(player->GetSession()).PSendSysMessage("Arena team deleted!");
-			player->CLOSE_GOSSIP_MENU();
-			return true;
-		}
-		break;
+    bool OnGossipHello(Player* player, Creature* me)
+    {
+        if(!player || !me)
+            return true;
 
-		case 8: // Script Info
-		{
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Click on Create new 1v1 Arena team", GOSSIP_SENDER_MAIN, uiAction);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Join 1v1 Arena and ready!", GOSSIP_SENDER_MAIN, uiAction);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Enjoy!", GOSSIP_SENDER_MAIN, uiAction);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<- Back", GOSSIP_SENDER_MAIN, 7);
-			player->SEND_GOSSIP_MENU(68, me->GetGUID());
-			return true;
-		}
-		break;
+        if(sWorld->getBoolConfig(CONFIG_ARENA_1V1_ENABLE) == false)
+        {
+            ChatHandler(player->GetSession()).SendSysMessage("1v1 disabled!");
+            return true;
+        }
 
-		}
+        if(player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5))
+                player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, "Zrusit frontu na 1v1 Arenu", GOSSIP_SENDER_MAIN, 3, "Myslis to vazne?", 0, false);
+        else
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Pripojit na 1v1 Arenu (unrated)", GOSSIP_SENDER_MAIN, 20);
 
-		OnGossipHello(player, me);
-		return true;
-	}
+        if(player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_5v5)) == NULL)
+            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, "Vytvorit novy 1v1 ArenaTeam", GOSSIP_SENDER_MAIN, 1, "Vytvorit 1v1 arenateam?", sWorld->getIntConfig(CONFIG_ARENA_1V1_COSTS), false);
+        else
+        {
+            if(player->InBattlegroundQueueForBattlegroundQueueType(BATTLEGROUND_QUEUE_5v5) == false)
+            {
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Pripojit na 1v1 Arenu (rated)", GOSSIP_SENDER_MAIN, 2);
+                player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, "Zrusit arenateam", GOSSIP_SENDER_MAIN, 5, "Myslis to vazne?", 0, false);
+            }
+
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Zobraz statistiku", GOSSIP_SENDER_MAIN, 4);
+        }
+
+        player->SEND_GOSSIP_MENU(68, me->GetGUID());
+        return true;
+    }
+
+
+
+    bool OnGossipSelect(Player* player, Creature* me, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        if(!player || !me)
+            return true;
+
+        player->PlayerTalkClass->ClearMenus();
+
+        switch (uiAction)
+        {
+        case 1: // Create new Arenateam
+            {
+                if(sWorld->getIntConfig(CONFIG_ARENA_1V1_MIN_LEVEL) <= player->getLevel())
+                {
+                    if(player->GetMoney() >= sWorld->getIntConfig(CONFIG_ARENA_1V1_COSTS) && CreateArenateam(player, me))
+                        player->ModifyMoney(sWorld->getIntConfig(CONFIG_ARENA_1V1_COSTS) * -1);
+                }
+                else
+                {
+                    ChatHandler(player->GetSession()).PSendSysMessage("Musis mit level %u+ pro vytvoreni 1v1 arenateamu.", sWorld->getIntConfig(CONFIG_ARENA_1V1_MIN_LEVEL));
+                    player->CLOSE_GOSSIP_MENU();
+                    return true;
+                }
+            }
+            break;
+
+        case 2: // Join Queue Arena (rated)
+            {
+                if(Arena1v1CheckTalents(player) && JoinQueueArena(player, me, true) == false)
+                    ChatHandler(player->GetSession()).SendSysMessage("Something went wrong while join queue.");
+                
+                player->CLOSE_GOSSIP_MENU();
+                return true;
+            }
+            break;
+
+        case 20: // Join Queue Arena (unrated)
+            {
+                if(Arena1v1CheckTalents(player) && JoinQueueArena(player, me, false) == false)
+                    ChatHandler(player->GetSession()).SendSysMessage("Something went wrong while join queue.");
+                
+                player->CLOSE_GOSSIP_MENU();
+                return true;
+            }
+            break;
+
+        case 3: // Leave Queue
+            {
+                WorldPacket Data;
+                Data << (uint8)0x1 << (uint8)0x0 << (uint32)BATTLEGROUND_AA << (uint16)0x0 << (uint8)0x0;
+                player->GetSession()->HandleBattleFieldPortOpcode(Data);
+                player->CLOSE_GOSSIP_MENU();
+                return true;
+            }
+            break;
+
+        case 4: // get statistics
+            {
+                ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_5v5)));
+                if(at)
+                {
+                    std::stringstream s;
+                    s << "Rating: " << at->GetStats().Rating;
+                    s << "\nRank: " << at->GetStats().Rank;
+                    s << "\nSeason Games: " << at->GetStats().SeasonGames;
+                    s << "\nSeason Wins: " << at->GetStats().SeasonWins;
+                    s << "\nWeek Games: " << at->GetStats().WeekGames;
+                    s << "\nWeek Wins: " << at->GetStats().WeekWins;
+
+                    ChatHandler(player->GetSession()).PSendSysMessage(s.str().c_str());
+                }
+            }
+            break;
+
+
+        case 5: // Disband arenateam
+            {
+                WorldPacket Data;
+                Data << (uint32)player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_5v5));
+                player->GetSession()->HandleArenaTeamLeaveOpcode(Data);
+                ChatHandler(player->GetSession()).SendSysMessage("Arenateam smazan!");
+                player->CLOSE_GOSSIP_MENU();
+                return true;
+            }
+            break;
+
+        }
+
+        OnGossipHello(player, me);
+        return true;
+    }
 };
 
 
 void AddSC_npc_1v1arena()
 {
-	new npc_1v1arena();
-}
+    new npc_1v1arena();
+}

@@ -67,6 +67,18 @@ class cs_world_chat : public CommandScript
                                 msg += player->GetName();
                                 msg += "] |cfffaeb00";
                                 break;
+
+								
+						case SEC_VIP:
+							msg += "|cfffa9900[VIP] |cffffffff[";
+							msg += player->GetName();
+							msg += "] |cfffaeb00";
+							break;
+						case SEC_CONSOLE:
+							msg += "|cfffa9900[CONSOLE] |cffffffff[";
+							msg += player->GetName();
+							msg += "] |cfffaeb00";
+							break;
  
                 }
                        
