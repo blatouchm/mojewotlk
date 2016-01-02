@@ -231,13 +231,16 @@ void Arena::EndBattleground(uint32 winner)
 
 					//if (GetArenaType() == ARENA_TYPE_5v5)
 					//{
-						int32 honory = jestejnaIP() ? 50 : 500;
+						int32 honory = jestejnaIP() ? 60 : 400;
 
-						if (winnerArenaTeam->GetStats().dayWins == 0)  //za prvni win
+						if (GetArenaType() != ARENA_TYPE_5v5)
+							honory = 800;
+
+						if (winnerArenaTeam->GetStats().dayWins == 1)  //za prvni win
 							honory = jestejnaIP() ? 200 : 1500;
 
 						if (winnerArenaTeam->GetStats().dayGames > 5)
-							honory = jestejnaIP() ? 10 : 150;
+							honory = jestejnaIP() ? 10 : 300;
 
 						if (winnerArenaTeam->GetStats().dayGames > 20)
 							honory = jestejnaIP() ? 0 : 150;
@@ -255,7 +258,13 @@ void Arena::EndBattleground(uint32 winner)
 
 					//if (GetArenaType() == ARENA_TYPE_5v5)
 					//{
-						int32 honory = jestejnaIP() ? 50 : 150;
+						int32 honory = jestejnaIP() ? 10 : 100;
+
+						if (GetArenaType() == ARENA_TYPE_5v5)
+							honory = 200;
+
+						if (loserArenaTeam->GetStats().dayGames == 1)
+							honory = jestejnaIP() ? 50 : 500;
 
 						if (loserArenaTeam->GetStats().dayGames > 10)
 							honory = jestejnaIP() ? 10 : 50;
