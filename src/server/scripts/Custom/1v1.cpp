@@ -270,6 +270,8 @@ public:
                     s << "\nSeason Wins: " << at->GetStats().SeasonWins;
                     s << "\nWeek Games: " << at->GetStats().WeekGames;
                     s << "\nWeek Wins: " << at->GetStats().WeekWins;
+					s << "\nDay Wins: " << at->GetStats().dayWins;
+					s << "\nDay Games: " << at->GetStats().dayGames;
 
                     ChatHandler(player->GetSession()).PSendSysMessage(s.str().c_str());
                 }
@@ -279,6 +281,15 @@ public:
 
         case 5: // Disband arenateam
             {
+				ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_5v5)));
+				if (!at) return false;
+
+				if (at->GetStats().dayGames > 0)
+				{
+					ChatHandler(player->GetSession()).SendSysMessage("Arenateam muzes smazat az zitra, kdyz uz jsi dnes hral ! ");
+					return false;
+				}
+
                 WorldPacket Data;
                 Data << (uint32)player->GetArenaTeamId(ArenaTeam::GetSlotByType(ARENA_TEAM_5v5));
                 player->GetSession()->HandleArenaTeamLeaveOpcode(Data);

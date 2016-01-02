@@ -229,21 +229,46 @@ void Arena::EndBattleground(uint32 winner)
 
                     winnerArenaTeam->MemberWon(player, loserMatchmakerRating, winnerMatchmakerChange);
 
-					if (GetArenaType() == ARENA_TYPE_5v5)
-					{
-						player->ModifyHonorPoints(1000);
-						ChatHandler(player->GetSession()).PSendSysMessage("Ziskal jsi %i honoru.", 1000);
-					}
+					//if (GetArenaType() == ARENA_TYPE_5v5)
+					//{
+						int32 honory = jestejnaIP() ? 50 : 500;
+
+						if (winnerArenaTeam->GetStats().dayWins == 0)  //za prvni win
+							honory = jestejnaIP() ? 200 : 1500;
+
+						if (winnerArenaTeam->GetStats().dayGames > 5)
+							honory = jestejnaIP() ? 10 : 150;
+
+						if (winnerArenaTeam->GetStats().dayGames > 20)
+							honory = jestejnaIP() ? 0 : 150;
+
+						player->ModifyHonorPoints(honory);
+						ChatHandler(player->GetSession()).PSendSysMessage("Ziskal jsi %i honoru.", honory);
+						
+						if(jestejnaIP())
+							ChatHandler(player->GetSession()).PSendSysMessage("Pokud hrajes s nekym, kdo ma stejnou ip adresu, je pocet honoru o dost mensi.");
+					//}
                 }
                 else
                 {
                     loserArenaTeam->MemberLost(player, winnerMatchmakerRating, loserMatchmakerChange);
 
-					if (GetArenaType() == ARENA_TYPE_5v5)
-					{
-						player->ModifyHonorPoints(200);
-						ChatHandler(player->GetSession()).PSendSysMessage("Ziskal jsi %i honoru.", 200);
-					}
+					//if (GetArenaType() == ARENA_TYPE_5v5)
+					//{
+						int32 honory = jestejnaIP() ? 50 : 150;
+
+						if (loserArenaTeam->GetStats().dayGames > 10)
+							honory = jestejnaIP() ? 10 : 50;
+
+						if (loserArenaTeam->GetStats().dayGames > 20)
+							honory = jestejnaIP() ? 0 : 50;
+
+						player->ModifyHonorPoints(honory);
+						ChatHandler(player->GetSession()).PSendSysMessage("Ziskal jsi %i honoru.", honory);
+
+						if (jestejnaIP())
+							ChatHandler(player->GetSession()).PSendSysMessage("Pokud hrajes s nekym, kdo ma stejnou ip adresu, je pocet honoru o dost mensi.");
+					//}
 
                     // Arena lost => reset the win_rated_arena having the "no_lose" condition
                     player->ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE);

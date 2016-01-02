@@ -97,8 +97,8 @@ void ArenaTeamMgr::LoadArenaTeams()
 
     //                                                        0        1         2         3          4              5            6            7           8
     QueryResult result = CharacterDatabase.Query("SELECT arenaTeamId, name, captainGuid, type, backgroundColor, emblemStyle, emblemColor, borderStyle, borderColor, "
-    //      9        10        11         12           13       14
-        "rating, weekGames, weekWins, seasonGames, seasonWins, rank FROM arena_team ORDER BY arenaTeamId ASC");
+    //      9        10        11         12           13       14     15	    16
+        "rating, weekGames, weekWins, seasonGames, seasonWins, rank, dayWins, dayGames FROM arena_team ORDER BY arenaTeamId ASC");
 
     if (!result)
     {

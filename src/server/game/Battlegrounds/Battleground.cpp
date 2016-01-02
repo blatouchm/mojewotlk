@@ -123,6 +123,7 @@ Battleground::Battleground()
     m_InvitedHorde      = 0;
     m_ArenaType         = 0;
     m_IsArena           = false;
+	m_stejnaIP			= false;
     _winnerTeamId       = BG_TEAM_NEUTRAL;
     m_StartTime         = 0;
     m_ResetStatTimer    = 0;
@@ -469,8 +470,9 @@ inline void Battleground::_ProcessJoin(uint32 diff)
     }
 	// 1v1 Arena - Start arena after 30s, when all players are in arena
 	else if (GetArenaType() == ARENA_TYPE_5v5 && GetStartDelayTime() > 30000 && (m_PlayersCount[0] + m_PlayersCount[1]) == 2)
+	{
 		SetStartDelayTime(30000);
-	
+	}
     // After 1 minute or 30 seconds, warning is signaled
     else if (GetStartDelayTime() <= StartDelayTimes[BG_STARTING_EVENT_SECOND] && !(m_Events & BG_STARTING_EVENT_2))
     {
@@ -498,15 +500,34 @@ inline void Battleground::_ProcessJoin(uint32 diff)
         if (isArena())
         {
             /// @todo add arena sound PlaySoundToAll(SOUND_ARENA_START);
+			char ipadresa[30];
+			strcpy(ipadresa, "");
+
             for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-                if (Player* player = ObjectAccessor::FindPlayer(itr->first))
-                {
-                    // BG Status packet
-                    WorldPacket status;
-                    BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(m_TypeID, GetArenaType());
-                    uint32 queueSlot = player->GetBattlegroundQueueIndex(bgQueueTypeId);
-                    sBattlegroundMgr->BuildBattlegroundStatusPacket(&status, this, queueSlot, STATUS_IN_PROGRESS, 0, GetStartTime(), GetArenaType(), player->GetBGTeam());
-                    player->SendDirectMessage(&status);
+				if (Player* player = ObjectAccessor::FindPlayer(itr->first))
+				{
+					// BG Status packet
+					WorldPacket status;
+					BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(m_TypeID, GetArenaType());
+					uint32 queueSlot = player->GetBattlegroundQueueIndex(bgQueueTypeId);
+					sBattlegroundMgr->BuildBattlegroundStatusPacket(&status, this, queueSlot, STATUS_IN_PROGRESS, 0, GetStartTime(), GetArenaType(), player->GetBGTeam());
+					player->SendDirectMessage(&status);
+
+
+					//maji oba stejnou ip ?
+					if (GetArenaType() == ARENA_TYPE_5v5 &&	(m_PlayersCount[0] + m_PlayersCount[1]) == 2)
+					{
+						if (strcmp(ipadresa, "") == 0)
+							strcpy(ipadresa, player->GetSession()->GetRemoteAddress().c_str());
+						else //uz tam je 1. hrac
+						{
+							if (strcmp(ipadresa, player->GetSession()->GetRemoteAddress().c_str()) == 0)  //1 hrac/brachove?
+							{
+								SetstejnaIP(true);
+							}
+						}	
+					}
+
 
                     player->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                     player->ResetAllPowers();

@@ -36,6 +36,8 @@ ArenaTeam::ArenaTeam()
     Stats.Rating      = sWorld->getIntConfig(CONFIG_ARENA_START_RATING);
     Stats.WeekWins    = 0;
     Stats.SeasonWins  = 0;
+	Stats.dayWins = 0;
+	Stats.dayGames = 0;
 }
 
 ArenaTeam::~ArenaTeam()
@@ -206,6 +208,8 @@ bool ArenaTeam::LoadArenaTeamFromDB(QueryResult result)
     Stats.SeasonGames = fields[12].GetUInt16();
     Stats.SeasonWins  = fields[13].GetUInt16();
     Stats.Rank        = fields[14].GetUInt32();
+	Stats.dayWins		= fields[15].GetUInt16();
+	Stats.dayGames		= fields[16].GetUInt16();
 
     return true;
 }
@@ -758,6 +762,8 @@ int32 ArenaTeam::WonAgainst(uint32 Own_MMRating, uint32 Opponent_MMRating, int32
     Stats.WeekWins += 1;
     Stats.SeasonWins += 1;
 
+	Stats.dayWins += 1;
+	Stats.dayGames += 1;
     // Return the rating change, used to display it on the results screen
     return mod;
 }
@@ -773,6 +779,8 @@ int32 ArenaTeam::LostAgainst(uint32 Own_MMRating, uint32 Opponent_MMRating, int3
 
     // Modify the team stats accordingly
     FinishGame(rating_change);
+
+	Stats.dayGames += 1;
 
     // return the rating change, used to display it on the results screen
     return mod;
@@ -897,7 +905,9 @@ void ArenaTeam::SaveToDB()
     stmt->setUInt16(3, Stats.SeasonGames);
     stmt->setUInt16(4, Stats.SeasonWins);
     stmt->setUInt32(5, Stats.Rank);
-    stmt->setUInt32(6, GetId());
+	stmt->setUInt32(6, Stats.dayWins);
+	stmt->setUInt32(7, Stats.dayGames);
+    stmt->setUInt32(8, GetId());
     trans->Append(stmt);
 
     for (MemberList::const_iterator itr = Members.begin(); itr != Members.end(); ++itr)
@@ -907,7 +917,7 @@ void ArenaTeam::SaveToDB()
         stmt->setUInt16(1, itr->WeekGames);
         stmt->setUInt16(2, itr->WeekWins);
         stmt->setUInt16(3, itr->SeasonGames);
-        stmt->setUInt16(4, itr->SeasonWins);
+		stmt->setUInt16(4, itr->SeasonWins);
         stmt->setUInt32(5, GetId());
         stmt->setUInt32(6, itr->Guid.GetCounter());
         trans->Append(stmt);

@@ -109,6 +109,8 @@ struct ArenaTeamStats
     uint16 SeasonGames;
     uint16 SeasonWins;
     uint32 Rank;
+	uint16 dayWins;
+	uint16 dayGames;
 };
 
 #define MAX_ARENA_SLOT 3                                    // 0..2 slots
