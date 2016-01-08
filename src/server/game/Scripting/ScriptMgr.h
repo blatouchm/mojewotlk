@@ -535,6 +535,13 @@ class CommandScript : public ScriptObject
 
         // Should return a pointer to a valid command table (ChatCommand array) to be used by ChatHandler.
         virtual std::vector<ChatCommand> GetCommands() const = 0;
+
+
+		// Called when a player selects an option in a command gossip window
+		virtual void OnGossipSelect(Player* /*player*/, uint32 /*menu_id*/, uint32 /*sender*/, uint32 /*action*/) { }
+		
+		 // Called when a player selects an option in a command gossip window
+		virtual void OnGossipSelectCode(Player* /*player*/, uint32 /*menu_id*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { }
 };
 
 class WeatherScript : public ScriptObject, public UpdatableScript<Weather>
@@ -983,6 +990,8 @@ class ScriptMgr
     public: /* CommandScript */
 
         std::vector<ChatCommand> GetChatCommands();
+		void OnGossipSelect(Player* player, uint32 menu_id, uint32 sender, uint32 action);
+		void OnGossipSelectCode(Player* player, uint32 menu_id, uint32 sender, uint32 action, const char* code);
 
     public: /* WeatherScript */
 

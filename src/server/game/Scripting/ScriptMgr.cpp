@@ -1045,6 +1045,21 @@ std::vector<ChatCommand> ScriptMgr::GetChatCommands()
     return table;
 }
 
+
+void ScriptMgr::OnGossipSelect(Player* player, uint32 menu_id, uint32 sender, uint32 action)
+{
+	ASSERT(player);
+	
+	FOREACH_SCRIPT(CommandScript)->OnGossipSelect(player, menu_id, sender, action);
+}
+
+void ScriptMgr::OnGossipSelectCode(Player* player, uint32 menu_id, uint32 sender, uint32 action, const char* code)
+{
+	ASSERT(player);
+	
+	FOREACH_SCRIPT(CommandScript)->OnGossipSelectCode(player, menu_id, sender, action, code);
+}
+
 void ScriptMgr::OnWeatherChange(Weather* weather, WeatherState state, float grade)
 {
     ASSERT(weather);
